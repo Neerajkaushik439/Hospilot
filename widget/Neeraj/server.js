@@ -62,7 +62,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/' || pathname === '/demo.html') {
-      serveStatic(req, res, path.join(ROOT, 'demo.html'));
+      serveStatic(req, res, path.join(ROOT, 'public', 'demo.html'));
       return;
     }
 
@@ -70,7 +70,7 @@ const server = http.createServer(async (req, res) => {
     const safeRel = path.normalize(pathname).replace(/^(\.\.[/\\])+/, '').replace(/^[/\\]+/, '');
     const allowedRootFiles = new Set(['widget.css', 'widget.js', 'demo.html']);
     if (allowedRootFiles.has(safeRel)) {
-      serveStatic(req, res, path.join(ROOT, safeRel));
+      serveStatic(req, res, path.join(ROOT, 'public', safeRel));
       return;
     }
 
