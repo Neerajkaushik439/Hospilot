@@ -1,0 +1,20 @@
+﻿{
+  "name": "hospilot-widget-neeraj",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hospilot Part 1 widget — candidate neeraj",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "test": "node --test tests/**/*.test.js",
+    "integration": "node scripts/integration-check.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {}
+}

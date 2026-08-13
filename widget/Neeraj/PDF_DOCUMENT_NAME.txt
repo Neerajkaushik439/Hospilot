@@ -1,0 +1,13 @@
+﻿PDF document name:
+Hospilot_Part1_Implementation_Interview_QnA.pdf
+
+Location:
+widget/neeraj/Hospilot_Part1_Implementation_Interview_QnA.pdf
+
+Contents:
+- Implementation plan (how Part 1 was built)
+- Tech stack / tools used
+- Architecture & request flow
+- Security decisions
+- Full interview-style Q&A
+- Run/verify cheat sheet
