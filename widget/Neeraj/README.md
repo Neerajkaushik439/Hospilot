@@ -1,4 +1,4 @@
-﻿# Hospilot Widget — Part 1
+# Hospilot Widget — Part 1
 
 Candidate: **neeraj**
 

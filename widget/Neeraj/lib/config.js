@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 
 /**
  * Central configuration for the Hospilot widget backend.
