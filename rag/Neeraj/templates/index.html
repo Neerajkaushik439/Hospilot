@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ask Hospilot — Hospital Data Q&A</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+    .header p {
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    /* ── Input area ── */
+    .input-area {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .input-row {
+      display: flex;
+      gap: 12px;
+    }
+    .input-row input {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-row input:focus {
+      border-color: #60a5fa;
+    }
+    .input-row input::placeholder {
+      color: #64748b;
+    }
+    .btn-ask {
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .btn-ask:hover { opacity: 0.9; }
+    .btn-ask:active { transform: scale(0.97); }
+    .btn-ask:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .example-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .chip {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid #334155;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .chip:hover {
+      border-color: #60a5fa;
+      color: #60a5fa;
+      background: rgba(96, 165, 250, 0.08);
+    }
+
+    /* ── Loading ── */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+    }
+    .loading.active { display: block; }
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #334155;
+      border-top-color: #60a5fa;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Result cards ── */
+    .result {
+      display: none;
+    }
+    .result.active { display: block; }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .card-header .icon { font-size: 16px; }
+
+    /* Answer card */
+    .answer-card {
+      border-color: #3b82f6;
+      border-width: 1px;
+    }
+    .answer-card .card-header { color: #60a5fa; }
+    .answer-text {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #e2e8f0;
+    }
+    .answer-text strong, .answer-text b { color: #fff; }
+    .answer-text ul, .answer-text ol {
+      margin: 8px 0 8px 20px;
+    }
+    .answer-text li { margin-bottom: 4px; }
+
+    /* SQL card */
+    .sql-card pre {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 14px;
+      overflow-x: auto;
+      font-size: 13px;
+      font-family: 'Fira Code', 'Consolas', monospace;
+      color: #a5b4fc;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Results table */
+    .results-table-container {
+      overflow-x: auto;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .results-table th {
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid #334155;
+      position: sticky;
+      top: 0;
+    }
+    .results-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #1e293b;
+      color: #cbd5e1;
+    }
+    .results-table tr:hover td {
+      background: rgba(96, 165, 250, 0.04);
+    }
+    .row-count {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 8px;
+    }
+
+    /* Error */
+    .error-card {
+      border-color: #ef4444;
+    }
+    .error-card .card-header { color: #f87171; }
+    .error-text { color: #fca5a5; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .input-row { flex-direction: column; }
+      body { padding: 20px 12px; }
+      .header h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏥 Ask Hospilot</h1>
+      <p>Ask plain-English questions about hospital operations — get real answers grounded in data.</p>
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <input type="text" id="question" placeholder="e.g. How many ICU beds are available right now?"
+               autofocus autocomplete="off">
+        <button class="btn-ask" id="askBtn" onclick="askQuestion()">Ask</button>
+      </div>
+      <div class="example-chips">
+        <button class="chip" onclick="fillQuestion(this)">How many ICU beds are free?</button>
+        <button class="chip" onclick="fillQuestion(this)">Which wards are short-staffed tonight?</button>
+        <button class="chip" onclick="fillQuestion(this)">How are beds doing?</button>
+        <button class="chip" onclick="fillQuestion(this)">Show me today's lab orders</button>
+        <button class="chip" onclick="fillQuestion(this)">Any active infection cases?</button>
+        <button class="chip" onclick="fillQuestion(this)">What is patient satisfaction this month?</button>
+      </div>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Generating SQL and querying the database…</p>
+    </div>
+
+    <div class="result" id="result">
+      <!-- Answer -->
+      <div class="card answer-card" id="answerCard">
+        <div class="card-header"><span class="icon">💡</span> Answer</div>
+        <div class="answer-text" id="answerText"></div>
+      </div>
+
+      <!-- SQL Query -->
+      <div class="card sql-card" id="sqlCard">
+        <div class="card-header"><span class="icon">🔍</span> SQL Query (Reasoning)</div>
+        <pre id="sqlText"></pre>
+      </div>
+
+      <!-- Raw Results -->
+      <div class="card" id="resultsCard">
+        <div class="card-header"><span class="icon">📊</span> Raw Data</div>
+        <div class="results-table-container" id="resultsContainer"></div>
+      </div>
+
+      <!-- Error -->
+      <div class="card error-card" id="errorCard" style="display:none">
+        <div class="card-header"><span class="icon">⚠️</span> Error</div>
+        <div class="error-text" id="errorText"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('question');
+    const askBtn = document.getElementById('askBtn');
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !askBtn.disabled) askQuestion();
+    });
+
+    function fillQuestion(chip) {
+      input.value = chip.textContent;
+      input.focus();
+    }
+
+    // Convert basic markdown bold (**text**) to <strong>
+    function mdBold(text) {
+      return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    }
+
+    // Convert markdown to simple HTML
+    function markdownToHtml(text) {
+      let html = text
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n- /g, '\n<li>')
+        .replace(/\n(\d+)\. /g, '\n<li>');
+
+      // Wrap in paragraphs
+      html = '<p>' + html + '</p>';
+
+      // Fix list items
+      html = html.replace(/<li>/g, '</p><ul><li>').replace(/<\/p><ul>/g, '<ul>');
+
+      // Clean up
+      html = html.replace(/<p><\/p>/g, '');
+
+      return html;
+    }
+
+    async function askQuestion() {
+      const question = input.value.trim();
+      if (!question) return;
+
+      // UI state: loading
+      askBtn.disabled = true;
+      document.getElementById('loading').classList.add('active');
+      document.getElementById('result').classList.remove('active');
+
+      try {
+        const res = await fetch('/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question }),
+        });
+        const data = await res.json();
+
+        // Hide loading
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('result').classList.add('active');
+
+        // Answer
+        document.getElementById('answerText').innerHTML = markdownToHtml(data.answer || 'No answer generated.');
+
+        // SQL
+        const sqlCard = document.getElementById('sqlCard');
+        if (data.sql) {
+          sqlCard.style.display = 'block';
+          document.getElementById('sqlText').textContent = data.sql;
+        } else {
+          sqlCard.style.display = 'none';
+        }
+
+        // Raw results table
+        const resultsCard = document.getElementById('resultsCard');
+        const container = document.getElementById('resultsContainer');
+        if (data.results && data.results.length > 0) {
+          resultsCard.style.display = 'block';
+          const cols = Object.keys(data.results[0]);
+          let table = '<table class="results-table"><thead><tr>';
+          cols.forEach(c => table += `<th>${c}</th>`);
+          table += '</tr></thead><tbody>';
+          data.results.forEach(row => {
+            table += '<tr>';
+            cols.forEach(c => {
+              let val = row[c];
+              if (val === null) val = '<em style="color:#64748b">null</em>';
+              table += `<td>${val}</td>`;
+            });
+            table += '</tr>';
+          });
+          table += '</tbody></table>';
+          table += `<div class="row-count">${data.results.length} row(s) returned</div>`;
+          container.innerHTML = table;
+        } else {
+          resultsCard.style.display = 'none';
+          container.innerHTML = '';
+        }
+
+        // Error
+        const errorCard = document.getElementById('errorCard');
+        if (data.error) {
+          errorCard.style.display = 'block';
+          document.getElementById('errorText').textContent = data.error;
+        } else {
+          errorCard.style.display = 'none';
+        }
+
+      } catch (err) {
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('result').classList.add('active');
+        document.getElementById('answerText').textContent = 'Request failed: ' + err.message;
+        document.getElementById('sqlCard').style.display = 'none';
+        document.getElementById('resultsCard').style.display = 'none';
+        document.getElementById('errorCard').style.display = 'none';
+      } finally {
+        askBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
